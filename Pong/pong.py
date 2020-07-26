@@ -1,19 +1,15 @@
 import turtle
 import winsound
-import mvmnt
-
 
 # Setting up the window
 window = turtle.Screen()
 window.title("Pong")  # Changes the name at the top left of the window
 window.bgcolor("black") # Changes the background color for the window
-window.bgpic("background.png")
+window.bgpic("Pong/background.png")
 window.setup(width=800, height=600) # Sets up the dimensions for the screen
 window.tracer(0) # Stops window from updating; forces up to manually update and allows for speeding up the game
 
-
 # Creating the objects within the game
-
 # Paddle A
 pad_a = turtle.Turtle()
 pad_a.speed(0) # Speed of animation; Sets to maximum speed
@@ -55,7 +51,7 @@ score_a, score_b = 0, 0
 
 
 #---------------------------------------------------
-# PADDLE A MOVEMENT FUNCTIONS
+# MOVEMENT FUNCTIONS
 #---------------------------------------------------
 def paddle_a_up() -> None:
     """
@@ -73,9 +69,6 @@ def paddle_a_down() -> None:
     y -= 20
     pad_a.sety(y)
 
-#---------------------------------------------------
-# PADDLE B MOVEMENT FUNCTIONS
-#---------------------------------------------------
 def paddle_b_up() -> None:
     """
     Moves paddle a up by 20 pixels each time up arrow is pressed.
@@ -92,6 +85,59 @@ def paddle_b_down() -> None:
     y -= 20
     pad_b.sety(y)
 
+#---------------------------------------------------
+# BORDER CHECKING
+#---------------------------------------------------
+def border_check() -> None:
+    global score_a, score_b
+    if ball.ycor() > 290:
+        ball.sety(290)
+        winsound.PlaySound("Pong/sound_files/border.wav", winsound.SND_ASYNC)
+        ball.dy *= -1
+            
+    if ball.ycor() < -290:
+        ball.sety(-290)
+        winsound.PlaySound("Pong/sound_files/border.wav", winsound.SND_ASYNC)
+        ball.dy *= -1
+    
+    if ball.xcor() > 390:
+        winsound.PlaySound("Pong/sound_files/winsound.wav", winsound.SND_ASYNC)
+        ball.goto(0, 0)
+        ball.dx *= -1
+        score_a += 1
+        pen.clear() # Updating Score
+        pen.write(f"Player A: {score_a}      Player B: {score_b}", align="center", font=("Comic Sans", 25, "normal"))
+
+    if ball.xcor() < -390:
+        winsound.PlaySound("Pong/sound_files/winsound.wav", winsound.SND_ASYNC)
+        ball.goto(0, 0)
+        ball.dx *= -1
+        score_b += 1
+        pen.clear() # Updating Score
+        pen.write(f"Player A: {score_a}      Player B: {score_b}", align="center", font=("Comic Sans", 25, "normal"))
+
+#----------------------------------------------------
+# COLLISION DETECTION
+#----------------------------------------------------
+def collision_detection() -> None:
+    if (ball.xcor() > 340 and ball.xcor() < 350) and (ball.ycor() < pad_b.ycor() + 40 and ball.ycor() > pad_b.ycor() - 40):
+        ball.setx(340)
+        winsound.PlaySound("Pong/sound_files/pad_collision.wav", winsound.SND_ASYNC)
+        ball.dx *= -1
+    
+    if (ball.xcor() < -340 and ball.xcor() > -350) and (ball.ycor() < pad_a.ycor() + 40 and ball.ycor() > pad_a.ycor() - 40):
+        ball.setx(-340)
+        winsound.PlaySound("Pong/sound_files/pad_collision.wav", winsound.SND_ASYNC)
+        ball.dx *= -1
+
+#----------------------------------------------------
+# Moving the ball
+#----------------------------------------------------
+def ball_movement() -> None:
+    """Moves the ball across the screen"""
+    ball.setx(ball.xcor() + ball.dx)
+    ball.sety(ball.ycor() + ball.dy)
+
 
 # Keyboard binding
 window.listen()
@@ -105,55 +151,8 @@ running = True
 while running:
     try:
         window.update()
-        
-        #----------------------------------------------------
-        # Moving the ball
-        #----------------------------------------------------
-        ball.setx(ball.xcor() + ball.dx)
-        ball.sety(ball.ycor() + ball.dy)
-
-        #----------------------------------------------------
-        # BORDER CHECKING
-        #----------------------------------------------------
-        if ball.ycor() > 290:
-            ball.sety(290)
-            winsound.PlaySound("sound_files/border.wav", winsound.SND_ASYNC)
-            ball.dy *= -1
-            
-        if ball.ycor() < -290:
-            ball.sety(-290)
-            winsound.PlaySound("sound_files/border.wav", winsound.SND_ASYNC)
-            ball.dy *= -1
-        
-        if ball.xcor() > 390:
-            winsound.PlaySound("sound_files/winsound.wav", winsound.SND_ASYNC)
-            ball.goto(0, 0)
-            ball.dx *= -1
-            score_a += 1
-            pen.clear() # Updating Score
-            pen.write(f"Player A: {score_a}      Player B: {score_b}", align="center", font=("Comic Sans", 25, "normal"))
-
-        if ball.xcor() < -390:
-            winsound.PlaySound("sound_files/winsound.wav", winsound.SND_ASYNC)
-            ball.goto(0, 0)
-            ball.dx *= -1
-            score_b += 1
-            pen.clear() # Updating Score
-            pen.write(f"Player A: {score_a}      Player B: {score_b}", align="center", font=("Comic Sans", 25, "normal"))
-
-        #----------------------------------------------------
-        # COLLISION DETECTION
-        #----------------------------------------------------
-        if (ball.xcor() > 340 and ball.xcor() < 350) and (ball.ycor() < pad_b.ycor() + 40 and ball.ycor() > pad_b.ycor() - 40):
-            ball.setx(340)
-            winsound.PlaySound("sound_files/pad_collision.wav", winsound.SND_ASYNC)
-            ball.dx *= -1
-        
-        if (ball.xcor() < -340 and ball.xcor() > -350) and (ball.ycor() < pad_a.ycor() + 40 and ball.ycor() > pad_a.ycor() - 40):
-            ball.setx(-340)
-            winsound.PlaySound("sound_files/pad_collision.wav", winsound.SND_ASYNC)
-            ball.dx *= -1
+        ball_movement()
+        border_check()
+        collision_detection()
     except:
         running = False
-
-    
